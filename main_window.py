@@ -1,4 +1,6 @@
-from gi.repository import Gtk
+from gi.repository import Gtk, GLib
+
+from file import File
 
 class MainWindow:
     def __init__(self, target):
@@ -11,6 +13,8 @@ class MainWindow:
         self.window = self.builder.get_object("window")
         self.file_dialog = self.builder.get_object("file_dialog")
         self.file_store = self.builder.get_object("filestore")
+        
+        self.file_store.append(['/home/haswi/git/mtagger/Flute.nonvib.ff.A4.mono.wav', 'N/A'])
         
         self.last_dir = None
         self.path_list = []
@@ -38,8 +42,16 @@ class MainWindow:
     def del_button_clicked_cb(self, button):
         print("del_button_clicked_cb")
     def play_button_clicked_cb(self, button):
-        print("play_button_clicked_cb")
+        if not self.sel_files:
+            return
+        sfile = File(self.sel_files[1][0][0])
+        sfile.play_file()
+        
     def cl_button_clicked_cb(self, button):
+        if not self.sel_files:
+            return
+        sfile = File(self.sel_files[1][0][0])
+        print(sfile.samples)
         for f in self.sel_files[1]:
             cls = self.target.do_classify(f[0])
             self.file_store[self.sel_files[0].get_iter(f[1])][1] = cls

@@ -30,7 +30,7 @@ THE SOFTWARE.
   <!-- interface-name mTagger -->
   <object class="GtkFileFilter" id="audiofilter">
     <mime-types>
-      <mime-type>audio/wav</mime-type>
+      <mime-type>audio/*</mime-type>
     </mime-types>
   </object>
   <object class="GtkListStore" id="filestore">
