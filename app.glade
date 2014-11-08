@@ -39,6 +39,12 @@ THE SOFTWARE.
       <column type="gchararray"/>
       <!-- column-name class_name -->
       <column type="gchararray"/>
+      <!-- column-name progress -->
+      <column type="gint"/>
+      <!-- column-name progress_message -->
+      <column type="gchararray"/>
+      <!-- column-name progress_visibility -->
+      <column type="gboolean"/>
     </columns>
   </object>
   <object class="GtkWindow" id="window">
@@ -147,9 +153,10 @@ THE SOFTWARE.
             </child>
             <child>
               <object class="GtkTreeViewColumn" id="treeviewcolumn1">
+                <property name="max_width">600</property>
                 <property name="title" translatable="yes">Cesta</property>
                 <child>
-                  <object class="GtkCellRendererText" id="cellrenderertext1"/>
+                  <object class="GtkCellRendererText" id="cellrendererpath"/>
                   <attributes>
                     <attribute name="text">0</attribute>
                   </attributes>
@@ -160,9 +167,17 @@ THE SOFTWARE.
               <object class="GtkTreeViewColumn" id="treeviewcolumn2">
                 <property name="title" translatable="yes">Třída</property>
                 <child>
-                  <object class="GtkCellRendererText" id="cellrenderertext2"/>
+                  <object class="GtkCellRendererText" id="cellrendererclass"/>
                   <attributes>
                     <attribute name="text">1</attribute>
+                  </attributes>
+                </child>
+                <child>
+                  <object class="GtkCellRendererProgress" id="cellrendererprogress"/>
+                  <attributes>
+                    <attribute name="visible">4</attribute>
+                    <attribute name="pulse">2</attribute>
+                    <attribute name="text">3</attribute>
                   </attributes>
                 </child>
               </object>
