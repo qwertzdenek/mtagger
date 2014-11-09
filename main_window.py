@@ -9,9 +9,7 @@ M_PRGM = 3  # progress message
 M_PRGV = 4  # progress visibility
 
 class MainWindow:
-    def __init__(self, target):
-        self.target = target
-    
+    def __init__(self):
         self.builder = Gtk.Builder()
         self.builder.add_from_file("app.glade")
         self.builder.connect_signals(self)
@@ -48,7 +46,7 @@ class MainWindow:
         if not len(self.sel_files):
             return
         row = self.sel_files[0]
-        del_iter = self.file_store.get_iter(self.file_view.get_path_at_pos(0, row)[0])
+        del_iter = self.file_store.get_iter(Gtk.TreePath.new_from_indices([row]))
         self.file_store.remove(del_iter)
         del self.all_files[row]
 
@@ -60,12 +58,9 @@ class MainWindow:
     def cl_button_clicked_cb(self, button):
         if not len(self.sel_files):
             return
-        row = self.sel_files[0]
-        self.target.do_classify(self.all_files[row], row, self.update_classify_progress_cb)
-
-        #for f in self.sel_files[1]:
-        #    cls = self.target.do_classify(f[0])
-        #    self.file_store[self.sel_files[0].get_iter(f[1])][1] = cls
+        for row in self.sel_files:
+            cl = Classifier(self.all_files[row], row, self.update_classify_progress_cb)
+            cl.start()
 
     def fileview_selection_changed_cb(self, tree_selection):
         (model, pathlist) = tree_selection.get_selected_rows()
@@ -74,7 +69,7 @@ class MainWindow:
             self.sel_files += path.get_indices()
 
     def update_classify_progress_cb(self, row, state, progress, message):
-        new_iter = self.file_store.get_iter(self.file_view.get_path_at_pos(0, row)[0])
+        new_iter = self.file_store.get_iter(Gtk.TreePath.new_from_indices([row]))
         if state == Classifier.LOADING:
             self.file_store[new_iter][M_CLASS] = "N/A"
             self.file_store[new_iter][M_PRG] = progress

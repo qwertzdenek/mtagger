@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
-from classifier import Classifier
 from main_window import MainWindow
 
 def main():
-    classify = Classifier()
-    window = MainWindow(classify)
+    window = MainWindow()
     window.main()
 
 if __name__ == '__main__':
