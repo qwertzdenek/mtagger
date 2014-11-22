@@ -1,16 +1,19 @@
 import gi, numpy as np
 gi.require_version('Gst', '1.0')
-from gi.repository import GObject, Gst
+from gi.repository import GLib, Gst
+from threading import Thread
+from classifier import Classifier
 
+GLib.threads_init()
 Gst.init(None)
 
-class FileTool(GObject.GObject):
+class FileTool(Thread):
     def __init__(self, path):
-        GObject.GObject.__init__(self)
+        super(FileTool, self).__init__()
         self.path = path
+        self.samples = None
 
-    def load_file(self, callback):
-        # TODO: if self.samples exists do nothing
+    def run(self):
         app_args = [
             'filesrc',
             'location="%s"'%(self.path),
@@ -18,11 +21,11 @@ class FileTool(GObject.GObject):
             'decodebin', '!',
             'audioconvert', '!',
             'audioresample', '!',
-            'audio/x-raw,format=S16LE,channels=1,rate=16000', '!',
+            'audio/x-raw,format=S16LE,channels=1,rate=%d'%(self.sampling_rate), '!',
             'appsink',
                 'name=app',
-            ]
-
+                'sync=false' ]
+    
         pipeline = Gst.parse_launch(" ".join(app_args))
         app = pipeline.get_by_name('app')
 
@@ -36,11 +39,22 @@ class FileTool(GObject.GObject):
                 break
             
             if cntr == 10:
-                callback()
+                GLib.idle_add(self.ui_cb, self.row, Classifier.LOADING, None)
                 cntr = 0
+
             buf = sample.get_buffer()
             data = buf.extract_dup(0, buf.get_size())
             self.samples = np.append(self.samples, np.frombuffer(data, np.dtype('<i2')))
+
+        GLib.idle_add(self.ui_cb, self.row, None, "Načteno")
+
+    def load_file(self, sampling_rate, row, callback):
+        if self.samples is not None:
+            return
+        self.ui_cb = callback
+        self.row = row
+        self.sampling_rate = sampling_rate
+        self.start()
 
     def play(self):
         play_args = [

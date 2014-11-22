@@ -39,19 +39,12 @@ THE SOFTWARE.
       <column type="gchararray"/>
       <!-- column-name class_name -->
       <column type="gchararray"/>
-      <!-- column-name progress -->
-      <column type="gint"/>
-      <!-- column-name progress_message -->
-      <column type="gchararray"/>
-      <!-- column-name progress_visibility -->
-      <column type="gboolean"/>
     </columns>
   </object>
   <object class="GtkWindow" id="window">
     <property name="width_request">500</property>
     <property name="height_request">400</property>
     <property name="can_focus">False</property>
-    <property name="margin_bottom">3</property>
     <property name="title" translatable="yes">mTagger</property>
     <property name="icon_name">applications-multimedia</property>
     <signal name="destroy" handler="destroy" swapped="no"/>
@@ -69,7 +62,6 @@ THE SOFTWARE.
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Otevřít</property>
-                <property name="use_underline">True</property>
                 <property name="icon_name">document-open</property>
                 <signal name="clicked" handler="open_button_clicked_cb" swapped="no"/>
               </object>
@@ -107,7 +99,7 @@ THE SOFTWARE.
               </packing>
             </child>
             <child>
-              <object class="GtkSeparatorToolItem" id="sep">
+              <object class="GtkSeparatorToolItem" id="separ">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
               </object>
@@ -137,6 +129,26 @@ THE SOFTWARE.
           </packing>
         </child>
         <child>
+          <object class="GtkComboBoxText" id="classcombo">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="has_entry">True</property>
+            <signal name="changed" handler="classcombo_changed_cb" swapped="no"/>
+            <child internal-child="entry">
+              <object class="GtkEntry" id="classcombo-entry">
+                <property name="can_focus">True</property>
+                <property name="placeholder_text" translatable="yes">Zadejte novou třídu</property>
+                <signal name="activate" handler="classcombo_entry_activated_cb" swapped="no"/>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkTreeView" id="fileview">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
@@ -153,7 +165,6 @@ THE SOFTWARE.
             </child>
             <child>
               <object class="GtkTreeViewColumn" id="treeviewcolumn1">
-                <property name="max_width">600</property>
                 <property name="title" translatable="yes">Cesta</property>
                 <child>
                   <object class="GtkCellRendererText" id="cellrendererpath"/>
@@ -167,17 +178,9 @@ THE SOFTWARE.
               <object class="GtkTreeViewColumn" id="treeviewcolumn2">
                 <property name="title" translatable="yes">Třída</property>
                 <child>
-                  <object class="GtkCellRendererText" id="cellrendererclass"/>
+                  <object class="GtkCellRendererText" id="cellrenderertext"/>
                   <attributes>
                     <attribute name="text">1</attribute>
-                  </attributes>
-                </child>
-                <child>
-                  <object class="GtkCellRendererProgress" id="cellrendererprogress"/>
-                  <attributes>
-                    <attribute name="visible">4</attribute>
-                    <attribute name="pulse">2</attribute>
-                    <attribute name="text">3</attribute>
                   </attributes>
                 </child>
               </object>
@@ -186,70 +189,56 @@ THE SOFTWARE.
           <packing>
             <property name="expand">True</property>
             <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="position">2</property>
           </packing>
         </child>
-      </object>
-    </child>
-  </object>
-  <object class="GtkFileChooserDialog" id="file_dialog">
-    <property name="name">Vyberte soubor</property>
-    <property name="can_focus">False</property>
-    <property name="margin_top">8</property>
-    <property name="title" translatable="yes">Vyberte soubor</property>
-    <property name="modal">True</property>
-    <property name="window_position">center-on-parent</property>
-    <property name="icon_name">document-open</property>
-    <property name="type_hint">normal</property>
-    <property name="transient_for">window</property>
-    <property name="filter">audiofilter</property>
-    <property name="select_multiple">True</property>
-    <child internal-child="vbox">
-      <object class="GtkBox" id="filechooserdialog-vbox">
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox" id="filechooserdialog-action_area">
+        <child>
+          <object class="GtkStatusbar" id="statusbar1">
+            <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
+            <property name="margin_left">10</property>
+            <property name="margin_right">10</property>
+            <property name="margin_start">10</property>
+            <property name="margin_end">10</property>
+            <property name="margin_top">6</property>
+            <property name="margin_bottom">6</property>
+            <property name="spacing">2</property>
             <child>
-              <object class="GtkButton" id="button2">
-                <property name="label" translatable="yes">Zrušit</property>
+              <object class="GtkLabel" id="status">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Trénovací množina prázdná</property>
+                <property name="ellipsize">start</property>
+                <attributes>
+                  <attribute name="font-desc" value="&lt;zadejte hodnotu&gt; 8"/>
+                </attributes>
               </object>
               <packing>
-                <property name="expand">True</property>
+                <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">0</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="button1">
-                <property name="label" translatable="yes">Budiž</property>
+              <object class="GtkSpinner" id="running">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can_focus">False</property>
               </object>
               <packing>
-                <property name="expand">True</property>
+                <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
           <packing>
             <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="position">0</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">3</property>
           </packing>
         </child>
       </object>
     </child>
-    <action-widgets>
-      <action-widget response="0">button2</action-widget>
-      <action-widget response="1">button1</action-widget>
-    </action-widgets>
   </object>
 </interface>

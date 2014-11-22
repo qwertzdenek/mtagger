@@ -1,28 +1,44 @@
-from gi.repository import GLib
-#from features import mfcc
-from threading import Thread
+import numpy as np
+from statistics import mode
+from VoiceActivityDetection import simpleVAD
+from features import mfcc
+from sklearn import svm
 
-GLib.threads_init()
-
-class Classifier(Thread):
+class Classifier():
     LOADING = 1
-    CLASSIFYING = 2
+    CLASSIFIED = 2
 
-    def __init__(self, clfile, row, callback):
-        super(Classifier, self).__init__()
+    # indicates learned state
+    learned = False
+    clf = None
+
+    def __init__(self, sampling_rate, clfile, row, callback):
         self.clfile = clfile
         self.row = row
         self.ui_cb = callback
-        self.progress = 0
+        self.sampling_rate = sampling_rate
 
-    def run(self):
-        self.clfile.load_file(self.notify_loading)
-        # TODO: klasifikace
-        #mfcc_feat = mfcc(clfile.samples,16000)
-        #print(mfcc_feat)
-        GLib.idle_add(self.ui_cb, self.row, None, 0, "Flétna")
+    def classify(self):
+        if not Classifier.learned:
+            self.ui_cb(self.row, None, "N/A klasifikace")
+            return
 
-    def notify_loading(self):
-        self.progress += 1
-        GLib.idle_add(self.ui_cb, self.row, Classifier.LOADING, self.progress, "Načítám")
+        self.feat = mfcc(self.clfile.samples, self.sampling_rate, VAD=simpleVAD)
+        self.res = Classifier.clf.predict(self.feat)
+
+        try:
+            cls = int(mode(self.res))
+        except statistics.StatisticsError as e:
+            self.ui_cb(self.row, None, "!nerozhodnutené!")
+            return
+        self.ui_cb(self.row, Classifier.CLASSIFIED, cls)
+
+    def new_training(X, y):
+        Classifier.clf = svm.LinearSVC()
+        try:
+            Classifier.clf.fit(X, y)
+        except ValueError as e:
+            return False;
+        Classifier.learned = True
+        return True
 

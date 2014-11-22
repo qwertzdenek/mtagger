@@ -5,7 +5,7 @@ from features import sigproc
 from scipy.fftpack import dct
     
 def mfcc(signal,samplerate=16000,winlen=0.025,winstep=0.01,numcep=13,
-          nfilt=26,nfft=512,lowfreq=0,highfreq=None,preemph=0.97,ceplifter=22,appendEnergy=True):
+          nfilt=26,nfft=512,lowfreq=0,highfreq=None,preemph=0.97,ceplifter=22,appendEnergy=True, VAD=None):
     """Compute MFCC features from an audio signal.
 
     :param signal: the audio signal from which to compute features. Should be an N*1 array
@@ -20,9 +20,10 @@ def mfcc(signal,samplerate=16000,winlen=0.025,winstep=0.01,numcep=13,
     :param preemph: apply preemphasis filter with preemph as coefficient. 0 is no filter. Default is 0.97. 
     :param ceplifter: apply a lifter to final cepstral coefficients. 0 is no lifter. Default is 22. 
     :param appendEnergy: if this is true, the zeroth cepstral coefficient is replaced with the log of the total frame energy.
+    :param VAD: Voice Activity Detection function, see VoiceActivityDetection.py
     :returns: A numpy array of size (NUMFRAMES by numcep) containing features. Each row holds 1 feature vector.
     """            
-    feat,energy = fbank(signal,samplerate,winlen,winstep,nfilt,nfft,lowfreq,highfreq,preemph)
+    feat,energy = fbank(signal,samplerate,winlen,winstep,nfilt,nfft,lowfreq,highfreq,preemph, VAD)
     feat = numpy.log(feat)
     feat = dct(feat, type=2, axis=1, norm='ortho')[:,:numcep]
     feat = lifter(feat,ceplifter)
@@ -30,7 +31,7 @@ def mfcc(signal,samplerate=16000,winlen=0.025,winstep=0.01,numcep=13,
     return feat
 
 def fbank(signal,samplerate=16000,winlen=0.025,winstep=0.01,
-          nfilt=26,nfft=512,lowfreq=0,highfreq=None,preemph=0.97):
+          nfilt=26,nfft=512,lowfreq=0,highfreq=None,preemph=0.97, VAD = None):
     """Compute Mel-filterbank energy features from an audio signal.
 
     :param signal: the audio signal from which to compute features. Should be an N*1 array
@@ -41,13 +42,14 @@ def fbank(signal,samplerate=16000,winlen=0.025,winstep=0.01,
     :param nfft: the FFT size. Default is 512.
     :param lowfreq: lowest band edge of mel filters. In Hz, default is 0.
     :param highfreq: highest band edge of mel filters. In Hz, default is samplerate/2
-    :param preemph: apply preemphasis filter with preemph as coefficient. 0 is no filter. Default is 0.97. 
+    :param preemph: apply preemphasis filter with preemph as coefficient. 0 is no filter. Default is 0.97.
+    :param VAD: Voice Activity Detection function, see VoiceActivityDetection.py
     :returns: 2 values. The first is a numpy array of size (NUMFRAMES by nfilt) containing features. Each row holds 1 feature vector. The
         second return value is the energy in each frame (total energy, unwindowed)
     """          
     highfreq= highfreq or samplerate/2
     signal = sigproc.preemphasis(signal,preemph)
-    frames = sigproc.framesig(signal, winlen*samplerate, winstep*samplerate)
+    frames = sigproc.framesig(signal, winlen*samplerate, winstep*samplerate, VAD=VAD)
     pspec = sigproc.powspec(frames,nfft)
     energy = numpy.sum(pspec,1) # this stores the total energy in each frame
     
@@ -56,7 +58,7 @@ def fbank(signal,samplerate=16000,winlen=0.025,winstep=0.01,
     return feat,energy
 
 def logfbank(signal,samplerate=16000,winlen=0.025,winstep=0.01,
-          nfilt=26,nfft=512,lowfreq=0,highfreq=None,preemph=0.97):
+          nfilt=26,nfft=512,lowfreq=0,highfreq=None,preemph=0.97, VAD = None):
     """Compute log Mel-filterbank energy features from an audio signal.
 
     :param signal: the audio signal from which to compute features. Should be an N*1 array
@@ -67,14 +69,15 @@ def logfbank(signal,samplerate=16000,winlen=0.025,winstep=0.01,
     :param nfft: the FFT size. Default is 512.
     :param lowfreq: lowest band edge of mel filters. In Hz, default is 0.
     :param highfreq: highest band edge of mel filters. In Hz, default is samplerate/2
-    :param preemph: apply preemphasis filter with preemph as coefficient. 0 is no filter. Default is 0.97. 
+    :param preemph: apply preemphasis filter with preemph as coefficient. 0 is no filter. Default is 0.97.
+    :param VAD: Voice Activity Detection function, see VoiceActivityDetection.py
     :returns: A numpy array of size (NUMFRAMES by nfilt) containing features. Each row holds 1 feature vector. 
     """          
-    feat,energy = fbank(signal,samplerate,winlen,winstep,nfilt,nfft,lowfreq,highfreq,preemph)
+    feat,energy = fbank(signal,samplerate,winlen,winstep,nfilt,nfft,lowfreq,highfreq,preemph, VAD)
     return numpy.log(feat)
 
 def ssc(signal,samplerate=16000,winlen=0.025,winstep=0.01,
-          nfilt=26,nfft=512,lowfreq=0,highfreq=None,preemph=0.97):
+          nfilt=26,nfft=512,lowfreq=0,highfreq=None,preemph=0.97, VAD = None):
     """Compute Spectral Subband Centroid features from an audio signal.
 
     :param signal: the audio signal from which to compute features. Should be an N*1 array
@@ -85,12 +88,13 @@ def ssc(signal,samplerate=16000,winlen=0.025,winstep=0.01,
     :param nfft: the FFT size. Default is 512.
     :param lowfreq: lowest band edge of mel filters. In Hz, default is 0.
     :param highfreq: highest band edge of mel filters. In Hz, default is samplerate/2
-    :param preemph: apply preemphasis filter with preemph as coefficient. 0 is no filter. Default is 0.97. 
+    :param preemph: apply preemphasis filter with preemph as coefficient. 0 is no filter. Default is 0.97.
+    :param VAD: Voice Activity Detection function, see VoiceActivityDetection.py
     :returns: A numpy array of size (NUMFRAMES by nfilt) containing features. Each row holds 1 feature vector. 
     """          
     highfreq= highfreq or samplerate/2
     signal = sigproc.preemphasis(signal,preemph)
-    frames = sigproc.framesig(signal, winlen*samplerate, winstep*samplerate)
+    frames = sigproc.framesig(signal, winlen*samplerate, winstep*samplerate, VAD=VAD)
     pspec = sigproc.powspec(frames,nfft)
     
     fb = get_filterbanks(nfilt,nfft,samplerate)
