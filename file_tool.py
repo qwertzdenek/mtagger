@@ -17,6 +17,8 @@ gi.require_version('Gst', '1.0')
 from gi.repository import GLib, Gst
 from threading import Thread
 from classifier import Classifier
+import urllib.request
+import os
 
 GLib.threads_init()
 Gst.init(None)
@@ -28,9 +30,12 @@ class FileTool(Thread):
         self.samples = None
 
     def run(self):
+        path = self.path
+        if os.name == 'nt':
+            path = path.replace("\\", "\\\\")
         app_args = [
             'filesrc',
-            'location="%s"'%(self.path),
+            'location="%s"'%(path),
             '!',
             'decodebin', '!',
             'audioconvert', '!',
@@ -71,15 +76,6 @@ class FileTool(Thread):
         self.start()
 
     def play(self):
-        play_args = [
-            'filesrc',
-            'location="%s"'%(self.path),
-            '!',
-            'decodebin',
-            '!',
-            'pulsesink'
-            ]
-
-        pipeline = Gst.parse_launch(" ".join(play_args))
+        pipeline = Gst.parse_launch("playbin uri=file:{0}".format(urllib.request.pathname2url(self.path)))
         pipeline.set_state(Gst.State.PLAYING)
         
