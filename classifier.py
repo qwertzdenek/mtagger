@@ -48,9 +48,9 @@ class Classifier():
         self.ui_cb(self.row, Classifier.CLASSIFIED, cls)
 
     def new_training(X, y):
-        Classifier.clf = svm.LinearSVC()
+        Classifier.clf = svm.LinearSVC(C=0.9)
         try:
-            Classifier.clf.fit(X, y)
+            Classifier.clf.fit_transform(X, y)
         except ValueError as e:
             return False;
         Classifier.learned = True

@@ -39,7 +39,7 @@ class FileTool(Thread):
             'appsink',
                 'name=app',
                 'sync=false' ]
-    
+
         pipeline = Gst.parse_launch(" ".join(app_args))
         app = pipeline.get_by_name('app')
 
