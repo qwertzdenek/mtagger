@@ -107,8 +107,7 @@ class MainWindow:
             return
         self.counter = -1
         for row in self.sel_files:
-            cl = Classifier(MainWindow.SR, self.all_files[row], row, self.update_classify_progress_cb)
-            cl.classify()
+            Classifier.classify(self.all_files[row], MainWindow.SR, row, callback)
 
     def fileview_selection_changed_cb(self, tree_selection):
         (model, pathlist) = tree_selection.get_selected_rows()

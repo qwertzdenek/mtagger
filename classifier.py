@@ -26,26 +26,27 @@ class Classifier():
     learned = False
     clf = None
 
-    def __init__(self, sampling_rate, clfile, row, callback):
-        self.clfile = clfile
-        self.row = row
-        self.ui_cb = callback
-        self.sampling_rate = sampling_rate
-
-    def classify(self):
+    def classify(clfile, sampling_rate, row, callback):
+        """classifies connected file
+        :param clfile: instance of file
+        :param sampling_rate: sampling rate
+        :param row: actual row in table
+        :param callback: ui callback where classifier sends results
+        :returns: nothing, but calls callback with results
+        """
         if not Classifier.learned:
-            self.ui_cb(self.row, None, "N/A klasifikace")
+            callback(row, None, "N/A klasifikace")
             return
 
-        self.feat = mfcc(self.clfile.samples, self.sampling_rate, VAD=simpleVAD)
-        self.res = Classifier.clf.predict(self.feat)
+        feat = mfcc(clfile.samples, sampling_rate, VAD=simpleVAD)
+        res = Classifier.clf.predict(feat)
 
         try:
-            cls = int(mode(self.res))
+            cls = int(mode(res))
         except statistics.StatisticsError as e:
-            self.ui_cb(self.row, None, "!nerozhodnutené!")
+            callback(row, None, "!nerozhodnutené!")
             return
-        self.ui_cb(self.row, Classifier.CLASSIFIED, cls)
+        callback(row, Classifier.CLASSIFIED, cls)
 
     def new_training(X, y):
         Classifier.clf = svm.LinearSVC(C=0.9)

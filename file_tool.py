@@ -46,7 +46,9 @@ class FileTool(Thread):
                 'sync=false' ]
 
         pipeline = Gst.parse_launch(" ".join(app_args))
+        print(pipeline)
         app = pipeline.get_by_name('app')
+        print(app)
 
         pipeline.set_state(Gst.State.PLAYING)
         self.samples = np.array([])
