@@ -21,6 +21,7 @@ from sklearn import svm
 class Classifier():
     LOADING = 1
     CLASSIFIED = 2
+    ERROR = 3
 
     # indicates learned state
     learned = False
@@ -34,8 +35,8 @@ class Classifier():
         :param callback: ui callback where classifier sends results
         :returns: nothing, but calls callback with results
         """
-        if not Classifier.learned:
-            callback(row, None, "N/A klasifikace")
+        if not Classifier.learned or clfile.samples is None:
+            callback(row, Classifier.ERROR, "N/A klasifikace")
             return
 
         feat = mfcc(clfile.samples, sampling_rate, VAD=simpleVAD)
@@ -44,11 +45,16 @@ class Classifier():
         try:
             cls = int(mode(res))
         except statistics.StatisticsError as e:
-            callback(row, None, "!nerozhodnutené!")
+            callback(row, Classifier.ERROR, "!nerozhodnutené!")
             return
         callback(row, Classifier.CLASSIFIED, cls)
 
     def new_training(X, y):
+        """reads training vector and fits new hypothesis
+        :param X: training vector
+        :param y: target vector (classes)
+        :returns: True on success and False afterwards
+        """
         Classifier.clf = svm.LinearSVC(C=0.9)
         try:
             Classifier.clf.fit_transform(X, y)

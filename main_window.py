@@ -35,6 +35,9 @@ class MainWindow:
         self.run_indicator = self.builder.get_object("running")
         self.audiofilter = self.builder.get_object("audiofilter")
         self.classcombo = self.builder.get_object("classcombo")
+        self.aboutdialog = self.builder.get_object("aboutdialog")
+        
+        self.audiofilter.set_name("Zvuk")
         
         self.file_dialog = Gtk.FileChooserDialog("Otevřít", self.window, Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
         self.file_dialog.add_filter(self.audiofilter)
@@ -65,23 +68,26 @@ class MainWindow:
         self.window.show_all()
 
     def open_button_clicked_cb(self, button):
+        """Open button callback
+        :param button: signal came from this button
+        """
         if self.last_dir is not None:
             self.file_dialog.set_current_folder_uri(self.last_dir)
 
         response = self.file_dialog.run()
-
+        
+        self.file_dialog.hide()
+        
         if response == Gtk.ResponseType.OK:
             self.last_dir = self.file_dialog.get_current_folder_uri()
             file_names = self.file_dialog.get_filenames()
-            self.file_dialog.hide()
         else:
-            self.file_dialog.hide()
             return
 
         self.run_indicator.start()
         self.window.set_sensitive(False)
         self.counter = len(file_names)
-        for f in file_names:
+        for f in file_names: # update file_store
             row = self.file_store.iter_n_children(None)
             self.file_store.append([f, "N/A"])
             fobj = FileTool(f);
@@ -89,8 +95,12 @@ class MainWindow:
             self.all_files.append(fobj)
 
     def del_button_clicked_cb(self, button):
+        """Delete button callback
+        :param button: signal came from this button
+        """
         if not len(self.sel_files):
             return
+        # delete first item, this list will be updated imediatelly
         for i in range(len(self.sel_files)):
             row = self.sel_files[0]
             del_iter = self.file_store.get_iter(Gtk.TreePath.new_from_indices([row]))
@@ -98,18 +108,34 @@ class MainWindow:
             del self.all_files[row]
 
     def play_button_clicked_cb(self, button):
+        """Play button callback
+        :param button: signal came from this button
+        """
         if not len(self.sel_files):
             return
         self.all_files[self.sel_files[0]].play()
 
     def cl_button_clicked_cb(self, button):
+        """Classify button callback
+        :param button: signal came from this button
+        """
         if not len(self.sel_files):
             return
         self.counter = -1
         for row in self.sel_files:
-            Classifier.classify(self.all_files[row], MainWindow.SR, row, callback)
+            Classifier.classify(self.all_files[row], MainWindow.SR, row, self.update_classify_progress_cb)
+
+    def about_button_clicked_cb(self, button):
+        """Classify button callback
+        :param button: signal came from this button
+        """
+        self.aboutdialog.run()
+        self.aboutdialog.hide()
 
     def fileview_selection_changed_cb(self, tree_selection):
+        """Table selection callback
+        :param tree_selection: signal came from this button
+        """
         (model, pathlist) = tree_selection.get_selected_rows()
         self.sel_files = []
         for path in pathlist:
@@ -117,6 +143,9 @@ class MainWindow:
 
     # učí
     def classcombo_changed_cb(self, entry):
+        """Combobox list callback
+        :param entry: signal came from this button
+        """
         class_id = entry.get_active()
         if class_id == -1:
             return
@@ -125,7 +154,11 @@ class MainWindow:
 
     # vytvoří třídu
     def classcombo_entry_activated_cb(self, entry):
+        """Combobox entry update callback
+        :param entry: signal came from this button
+        """
         class_desc = entry.get_text()
+        # add only new classes
         if class_desc in self.class_names.values():
             return
         class_id = len(self.class_names)
@@ -137,6 +170,10 @@ class MainWindow:
         self.fill(class_id)
 
     def fill(self, class_id):
+        """Fills internal structer with new training samples.
+           Do not call directly.
+        :param class_id: class identification
+        """
         # get training samples
         for i in range(len(self.sel_files)):
             row = self.sel_files[0]
@@ -160,11 +197,21 @@ class MainWindow:
             self.status_label.set_text("Klasifikátor potřebuje víc tříd")
 
     def update_classify_progress_cb(self, row, state, message):
+        """Callback function for classifier, file loader or any other caller.
+           Must be done by UI thread
+        :param row: actual updated row
+        :param state: indicated state of caller
+        :param message: message from caller
+        """
         new_iter = self.file_store.get_iter(Gtk.TreePath.new_from_indices([row]))
         if state == Classifier.LOADING:
             self.file_store[new_iter][1] = "Načítám"
         elif state == Classifier.CLASSIFIED:
             self.file_store[new_iter][1] = self.class_names[message]
+        elif state == Classifier.ERROR:
+            self.status_label.set_text("ERROR: " + message)
+            self.run_indicator.stop()
+            self.window.set_sensitive(True)
         elif state is None:
             self.file_store[new_iter][1] = message
             self.counter -= 1
@@ -173,6 +220,9 @@ class MainWindow:
                 self.window.set_sensitive(True)
 
     def destroy(self, window):
+        """GTK callback when is window closed. Time to save application state.
+        :param window: actual closed window
+        """
         with open('dataset.pickle', 'wb') as f:
             pickle.dump((self.X, self.y, self.class_names), f, pickle.HIGHEST_PROTOCOL)
         Gtk.main_quit()

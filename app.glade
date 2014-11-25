@@ -97,6 +97,19 @@ THE SOFTWARE.
               </packing>
             </child>
             <child>
+              <object class="GtkToolButton" id="cl_button">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Klasifikovat</property>
+                <property name="use_underline">True</property>
+                <signal name="clicked" handler="cl_button_clicked_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkSeparatorToolItem" id="separ">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -107,12 +120,13 @@ THE SOFTWARE.
               </packing>
             </child>
             <child>
-              <object class="GtkToolButton" id="cl_button">
+              <object class="GtkToolButton" id="about_button">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Klasifikovat</property>
+                <property name="label" translatable="yes">toolbutton1</property>
                 <property name="use_underline">True</property>
-                <signal name="clicked" handler="cl_button_clicked_cb" swapped="no"/>
+                <property name="icon_name">help-about</property>
+                <signal name="clicked" handler="about_button_clicked_cb" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -245,6 +259,49 @@ THE SOFTWARE.
             <property name="pack_type">end</property>
             <property name="position">3</property>
           </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkAboutDialog" id="aboutdialog">
+    <property name="can_focus">False</property>
+    <property name="type_hint">dialog</property>
+    <property name="transient_for">window</property>
+    <property name="program_name">mTagger</property>
+    <property name="copyright" translatable="yes">Zdeněk Janeček</property>
+    <property name="comments" translatable="yes">Aplikace klasifikuje hudební nástroje ve zvukových nahrávkách.</property>
+    <property name="authors">Zdeněk Janeček
+Scikit Learn
+MFCC from James Lyons
+Numpy
+Scipy
+Gstreamer</property>
+    <property name="logo_icon_name">applications-multimedia</property>
+    <property name="license_type">mit-x11</property>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="aboutdialog-vbox1">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="aboutdialog-action_area1">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
         </child>
       </object>
     </child>

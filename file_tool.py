@@ -30,6 +30,8 @@ class FileTool(Thread):
         self.samples = None
 
     def run(self):
+        """Thread loop. Start with load_file() method.
+        """
         path = self.path
         if os.name == 'nt':
             path = path.replace("\\", "\\\\")
@@ -46,22 +48,22 @@ class FileTool(Thread):
                 'sync=false' ]
 
         pipeline = Gst.parse_launch(" ".join(app_args))
-        print(pipeline)
         app = pipeline.get_by_name('app')
-        print(app)
+        bus = pipeline.get_bus()
 
         pipeline.set_state(Gst.State.PLAYING)
+        (res, state, pending) = pipeline.get_state(Gst.CLOCK_TIME_NONE)
+        if res == Gst.StateChangeReturn.FAILURE:
+            GLib.idle_add(self.ui_cb, self.row, Classifier.ERROR, "Gstreamer error (missing plugin?)")
+            return
         self.samples = np.array([])
-        cntr = 0
+        
+        # tell main thread we are loading
+        GLib.idle_add(self.ui_cb, self.row, Classifier.LOADING, None)
         while True:
-            cntr += 1
             sample = app.emit('pull-sample')
             if sample == None:
                 break
-            
-            if cntr == 10:
-                GLib.idle_add(self.ui_cb, self.row, Classifier.LOADING, None)
-                cntr = 0
 
             buf = sample.get_buffer()
             data = buf.extract_dup(0, buf.get_size())
@@ -70,6 +72,11 @@ class FileTool(Thread):
         GLib.idle_add(self.ui_cb, self.row, None, "Načteno")
 
     def load_file(self, sampling_rate, row, callback):
+        """starts async thread which loads file
+        :param sampling_rate: training vector
+        :param row: actual row in table for callback
+        :param callback: UI thread callback indicating actual state
+        """
         if self.samples is not None:
             return
         self.ui_cb = callback
@@ -78,6 +85,8 @@ class FileTool(Thread):
         self.start()
 
     def play(self):
+        """plays file using Gstreamer
+        """
         pipeline = Gst.parse_launch("playbin uri=file:{0}".format(urllib.request.pathname2url(self.path)))
         pipeline.set_state(Gst.State.PLAYING)
         
