@@ -13,7 +13,7 @@ copies or substantial portions of the Software.
 """
 
 import numpy as np
-import statistics
+from scipy import stats
 from VoiceActivityDetection import simpleVAD
 from features import mfcc
 from sklearn import svm
@@ -42,11 +42,7 @@ class Classifier():
         feat = mfcc(clfile.samples, sampling_rate, winlen=0.030, VAD=simpleVAD)
         res = Classifier.clf.predict(feat[range(int(len(feat) / 2 - 3), int(len(feat) / 2 + 2))])
 
-        try:
-            cls = int(statistics.mode(res))
-        except statistics.StatisticsError as e:
-            callback(row, Classifier.ERROR, "!nerozhodnutené!")
-            return
+        cls = int(stats.mode(res)[0])
         callback(row, Classifier.CLASSIFIED, cls)
 
     def new_training(X, y):

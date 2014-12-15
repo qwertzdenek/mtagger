@@ -1,1 +1,2 @@
-python mtagger.py
+@echo off
+..\scripts\python.bat mtagger.py

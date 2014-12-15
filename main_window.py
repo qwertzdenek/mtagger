@@ -182,9 +182,9 @@ class MainWindow:
             samples = self.all_files[row].samples
             feat = mfcc(samples, 16000, winlen=0.030, VAD=simpleVAD)
             # add two symptoms from the middle
-            self.X.append(feat[len(feat) / 2 - 1])
+            self.X.append(feat[int(len(feat) / 2 - 1)])
             self.y.append(class_id)
-            self.X.append(feat[len(feat) / 2 + 1])
+            self.X.append(feat[int(len(feat) / 2 + 1)])
             self.y.append(class_id)
             
             # clear from the list
