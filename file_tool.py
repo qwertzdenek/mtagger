@@ -49,7 +49,6 @@ class FileTool(Thread):
 
         pipeline = Gst.parse_launch(" ".join(app_args))
         app = pipeline.get_by_name('app')
-        bus = pipeline.get_bus()
 
         pipeline.set_state(Gst.State.PLAYING)
         (res, state, pending) = pipeline.get_state(Gst.CLOCK_TIME_NONE)

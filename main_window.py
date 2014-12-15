@@ -13,6 +13,7 @@ copies or substantial portions of the Software.
 """
 
 import pickle
+import os
 import numpy as np
 from gi.repository import Gtk
 from file_tool import FileTool
@@ -89,7 +90,7 @@ class MainWindow:
         self.counter = len(file_names)
         for f in file_names: # update file_store
             row = self.file_store.iter_n_children(None)
-            self.file_store.append([f, "N/A"])
+            self.file_store.append([os.path.basename(f), "N/A"])
             fobj = FileTool(f);
             fobj.load_file(MainWindow.SR, row, self.update_classify_progress_cb)
             self.all_files.append(fobj)
@@ -178,7 +179,7 @@ class MainWindow:
         for i in range(len(self.sel_files)):
             row = self.sel_files[0]
             samples = self.all_files[row].samples
-            feat = mfcc(samples,16000, VAD=simpleVAD)
+            feat = mfcc(samples, 16000, winlen=0.030, VAD=simpleVAD)
             # add two symptoms from the middle
             self.X.append(feat[len(feat) / 2 - 1])
             self.y.append(class_id)

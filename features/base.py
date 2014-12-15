@@ -25,7 +25,7 @@ def mfcc(signal,samplerate=16000,winlen=0.025,winstep=0.01,numcep=13,
     """            
     feat,energy = fbank(signal,samplerate,winlen,winstep,nfilt,nfft,lowfreq,highfreq,preemph, VAD)
     feat = numpy.log(feat)
-    feat = dct(feat, type=2, axis=1, norm='ortho')[:,:numcep]
+    feat = dct(feat, type=2, axis=1, norm='ortho')[:,1:numcep+1]
     feat = lifter(feat,ceplifter)
     if appendEnergy: feat[:,0] = numpy.log(energy) # replace first cepstral coefficient with log of frame energy
     return feat
