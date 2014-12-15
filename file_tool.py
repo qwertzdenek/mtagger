@@ -20,7 +20,6 @@ from classifier import Classifier
 import urllib.request
 import os
 
-GLib.threads_init()
 Gst.init(None)
 
 class FileTool(Thread):

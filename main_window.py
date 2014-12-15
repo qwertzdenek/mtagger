@@ -38,12 +38,14 @@ class MainWindow:
         self.classcombo = self.builder.get_object("classcombo")
         self.aboutdialog = self.builder.get_object("aboutdialog")
 
-        self.file_dialog = Gtk.FileChooserDialog("Otevřít", self.window, Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+        self.file_dialog = Gtk.FileChooserDialog(title="Otevřít", transient_for=self.window, action=Gtk.FileChooserAction.OPEN)
+        self.file_dialog.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+        self.file_dialog.set_default_response(Gtk.ResponseType.OK)
         self.file_dialog.set_select_multiple(True)
 
         if os.name != 'nt':
-            self.file_dialog.add_filter(self.audiofilter)
             self.audiofilter.set_name("Zvuk")
+            self.file_dialog.add_filter(self.audiofilter)
 
         self.last_dir = None
 
