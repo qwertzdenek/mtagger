@@ -1,4 +1,4 @@
 #!/bin/bash
 
-python -Wd mtagger.py
+python3 -Wd mtagger.py
 
