@@ -1,3 +1,4 @@
+# coding=utf-8
 import numpy as np
 
 def simpleVAD(frames, sig, threshold=0.01):
