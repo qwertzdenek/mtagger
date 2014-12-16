@@ -17,6 +17,7 @@ from scipy import stats
 from VoiceActivityDetection import simpleVAD
 from features import mfcc
 from sklearn import svm
+from sklearn import grid_search
 
 class Classifier():
     LOADING = 1
@@ -40,7 +41,7 @@ class Classifier():
             return
 
         feat = mfcc(clfile.samples, sampling_rate, winlen=0.030, VAD=simpleVAD)
-        res = Classifier.clf.predict(feat[range(int(len(feat) / 2 - 3), int(len(feat) / 2 + 2))])
+        res = Classifier.clf.predict(feat[range(int(len(feat) / 2 - 4), int(len(feat) / 2 + 4))])
 
         cls = int(stats.mode(res)[0])
         callback(row, Classifier.CLASSIFIED, cls)
@@ -51,9 +52,11 @@ class Classifier():
         :param y: target vector (classes)
         :returns: True on success and False afterwards
         """
-        Classifier.clf = svm.LinearSVC(C=0.9)
+        clf = svm.SVC()
+        param_grid = {'C': [0.5, 5, 50, 500], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']}
+        Classifier.clf = grid_search.GridSearchCV(clf, param_grid, n_jobs=4)
         try:
-            Classifier.clf.fit_transform(X, y)
+            Classifier.clf.fit(X, y)
         except ValueError as e:
             return False;
         Classifier.learned = True
