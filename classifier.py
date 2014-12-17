@@ -42,7 +42,7 @@ class Classifier():
             callback(row, Classifier.ERROR, "N/A klasifikace")
             return
 
-        feat = mfcc(clfile.samples, sampling_rate, winlen=0.030, VAD=simpleVAD)
+        feat = mfcc(clfile.samples, sampling_rate, winlen=0.030, appendEnergy=False, VAD=simpleVAD)
         res = Classifier.clf.predict(feat[range(int(len(feat) / 2 - 4), int(len(feat) / 2 + 4))])
 
         cls = int(stats.mode(res)[0])
