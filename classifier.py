@@ -19,6 +19,7 @@ from VoiceActivityDetection import simpleVAD
 from features import mfcc
 from sklearn import svm
 from sklearn import grid_search
+import os
 
 class Classifier():
     LOADING = 1
@@ -55,7 +56,7 @@ class Classifier():
         """
         clf = svm.SVC()
         param_grid = {'C': [0.5, 5, 50, 500], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']}
-        Classifier.clf = grid_search.GridSearchCV(clf, param_grid, n_jobs=4)
+        Classifier.clf = grid_search.GridSearchCV(clf, param_grid, n_jobs=os.cpu_count())
         try:
             Classifier.clf.fit(X, y)
         except ValueError as e:
